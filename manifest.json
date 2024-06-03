@@ -1,0 +1,11 @@
+{
+	"id": "obsidian-content-style-manager",
+	"name": "Content Style Manager",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Demonstrates some of the capabilities of the Obsidian API.",
+	"author": "zhongyuming",
+	"authorUrl": "https://obsidian.md",
+	"fundingUrl": "https://obsidian.md/pricing",
+	"isDesktopOnly": false
+}
