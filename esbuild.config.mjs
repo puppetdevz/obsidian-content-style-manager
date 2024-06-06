@@ -1,6 +1,8 @@
 import esbuild from "esbuild";
 import process from "process";
 import os from "os"; // 引入 os 模块以检测操作系统
+import path from "path"; // 引入 path 模块以处理文件路径
+import fs from "fs"; // 引入 fs 模块以进行文件操作
 import builtins from "builtin-modules";
 
 const banner = `/*
@@ -16,9 +18,17 @@ const prod = process.argv[2] === "production";
 const isMACOS = os.platform() === "darwin";
 
 // 根据操作系统设置输出文件名
-const outfile = isMACOS
-	? `${os.homedir()}/Nextcloud/knowledge-warehouse/.obsidian/plugins/obsidian-content-style-manager/main.js`
-	: "main.js";
+const outfileDir = isMACOS
+	? path.join(
+			os.homedir(),
+			"Nextcloud",
+			"knowledge-warehouse",
+			".obsidian",
+			"plugins",
+			"obsidian-content-style-manager"
+	  )
+	: ".";
+const outfile = path.join(outfileDir, "main.js");
 
 const context = await esbuild.context({
 	banner: {
@@ -50,6 +60,14 @@ const context = await esbuild.context({
 	outfile: outfile, // 输出文件路径，根据操作系统设置
 });
 
+// 复制 manifest.json 文件到输出目录
+function copyManifest() {
+	const source = path.join("manifest.json");
+	const destination = path.join(outfileDir, "manifest.json");
+	fs.copyFileSync(source, destination);
+	console.log(`Copied manifest.json to ${destination}`);
+}
+
 // 根据环境决定是否进行文件监听
 if (prod) {
 	// 生产环境下只执行一次构建
@@ -58,4 +76,11 @@ if (prod) {
 } else {
 	// 开发环境下启用文件监听
 	await context.watch();
+
+	// 使用文件系统监听 manifest.json 的变化
+	fs.watchFile("manifest.json", (curr, prev) => {
+		if (curr.mtime !== prev.mtime) {
+			copyManifest();
+		}
+	});
 }
