@@ -42,6 +42,34 @@ export default class ContentStyleManagerPlugin extends Plugin {
 		}
 	}
 
+	async getCurrentThemeStyles(): Promise<string> {
+		const styles = Array.from(document.styleSheets)
+			.map((styleSheet) => {
+				try {
+					return Array.from(styleSheet.cssRules)
+						.map((rule) => rule.cssText)
+						.join("");
+				} catch (e) {
+					console.error("Could not access stylesheet: ", e);
+					return "";
+				}
+			})
+			.join("");
+		return styles;
+	}
+
+	async applyThemeStyles(html: string): Promise<string> {
+		const themeStyles = await this.getCurrentThemeStyles();
+		return `
+		  <html>
+		  <head>
+			<style>${themeStyles}</style>
+		  </head>
+		  <body>${html}</body>
+		  </html>
+		`;
+	}
+
 	convertMarkdownToHtml(markdown: string): string {
 		// 使用markdown-it将Markdown转换为HTML
 		const md = new Markdownit();
